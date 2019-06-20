@@ -27,7 +27,7 @@ void HTTPUtils::SendMessage(std::string Message){
 		return;
 	}
 
-	if (connect(sock, (struct sockaddr*) & serv_addr, sizeof(serv_addr)) < 0)
+	if (connect(this->sock, (struct sockaddr*) & serv_addr, sizeof(serv_addr)) < 0)
 	{
 		printf("\nConnection Failed \n");
 		return;
@@ -43,4 +43,38 @@ std::string HTTPUtils::ReceiveMessage(){
 	int valread;
 	valread = read(sock, buffer, 1024);
 	printf("%s\n", buffer);
+	return buffer;
+}
+
+void HTTPUtils::MakeRequest(std::string address,std::string request){
+	struct addrinfo hints , *results;
+	int rv;
+	int sockfd;
+	char inputVal[address.size() + 1];
+	strcpy(inputVal, address.c_str());
+	unsigned char buffer[64000];
+	memset(&hints,0,sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if( (rv = getaddrinfo(inputVal,"80",&hints,&results)) != 0){
+		fprintf(stderr,"getaddrinfo error: %s\n",gai_strerror(rv));
+	}
+
+    sockfd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
+
+    connect(sockfd, results->ai_addr, results->ai_addrlen);
+    send(sockfd, request.c_str(), strlen(request.c_str()), 0);
+
+	size_t size = sizeof(buffer);
+	size_t total = 0, n = 0;
+    while((n = recv(sockfd, buffer+total, size-total-1, 0)) > 0) {
+        total += n;
+    }
+    buffer[total] = 0;
+    std::cout << buffer << std::endl;
+
+    freeaddrinfo(results);
+
+    printf("\n");
 }

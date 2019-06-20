@@ -9,11 +9,16 @@
     #include <netinet/in.h> 
     #include <sys/socket.h> 
     #include <arpa/inet.h>
+    #include <sys/types.h>
+    #include <netdb.h>
+
     class HTTPUtils{
         public:
             HTTPUtils(int port,std::string ip);
             void SendMessage(std::string message);
             std::string ReceiveMessage();
+
+            void MakeRequest(std::string address,std::string request);
         private:
             int port;
             std::string ip;
