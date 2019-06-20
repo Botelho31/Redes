@@ -52,7 +52,7 @@ void HTTPUtils::MakeRequest(std::string address,std::string request){
 	int sockfd;
 	char inputVal[address.size() + 1];
 	strcpy(inputVal, address.c_str());
-	unsigned char buffer[64000];
+	char buffer[64000];
 	memset(&hints,0,sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -73,8 +73,17 @@ void HTTPUtils::MakeRequest(std::string address,std::string request){
     }
     buffer[total] = 0;
     std::cout << buffer << std::endl;
+	infoDump("dump/dump.txt",buffer);
 
     freeaddrinfo(results);
 
     printf("\n");
+}
+
+void HTTPUtils::infoDump(std::string filename,char* buffer){
+	std::ofstream savefile;
+    savefile.open (filename);
+    savefile << buffer;
+    savefile.close();
+	std::cout << "Dumped" << std::endl;
 }

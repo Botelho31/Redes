@@ -19,6 +19,7 @@
             std::string ReceiveMessage();
 
             void MakeRequest(std::string address,std::string request);
+            void infoDump(std::string filename,char* buffer);
         private:
             int port;
             std::string ip;
