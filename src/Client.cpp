@@ -1,12 +1,6 @@
-// Client side C/C++ program to demonstrate Socket programming 
-#include <stdio.h> 
-#include <sys/socket.h> 
-#include <stdlib.h> 
-#include <netinet/in.h> 
-#include <string.h> 
-#include <unistd.h>
-#include <arpa/inet.h>
-#define PORT 8080 
+#include "../include/Client.h"
+
+#define PORT 8080
 
 int main(int argc, char const* argv[])
 {
@@ -38,6 +32,7 @@ int main(int argc, char const* argv[])
 		printf("\nConnection Failed \n");
 		return -1;
 	}
+
 	printf("Client: Sending Hello\n");
 	send(sock, hello, strlen(hello), 0);
 	valread = read(sock, buffer, 1024); //Blocked until message is sent from the server
