@@ -2,7 +2,7 @@
 
 // int main(int argc, char const* argv[])
 // {
-// 	int server_fd, new_socket, new_socket2, valread;
+	// int server_fd, new_socket, new_socket2, valread;
 // 	struct sockaddr_in address;
 // 	int opt = 1;
 // 	int addrlen = sizeof(address);
