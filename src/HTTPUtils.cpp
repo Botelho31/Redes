@@ -46,7 +46,7 @@ std::string HTTPUtils::ReceiveMessage(){
 	return buffer;
 }
 
-void HTTPUtils::MakeRequest(std::string address,std::string request){
+char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	struct addrinfo hints , *results;
 	int rv;
 	int sockfd;
@@ -72,18 +72,70 @@ void HTTPUtils::MakeRequest(std::string address,std::string request){
         total += n;
     }
     buffer[total] = 0;
-    std::cout << buffer << std::endl;
-	infoDump("dump/dump.txt",buffer);
-
     freeaddrinfo(results);
+	char* test = buffer;
 
-    printf("\n");
+	return test;
+
 }
 
-void HTTPUtils::infoDump(std::string filename,char* buffer){
+void HTTPUtils::infoDump(std::string filename,std::string content){
 	std::ofstream savefile;
     savefile.open (filename);
-    savefile << buffer;
+    savefile << content;
     savefile.close();
-	std::cout << "Dumped" << std::endl;
 }
+
+std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* response){
+	std::map<std::string,std::vector<std::string>> httpParams;
+	std::stringstream streamresponse;
+	streamresponse << response;
+    std::string checkline;
+
+	//Getting the HTTP Header
+	std::vector<std::string> responseTop;
+	getline(streamresponse,checkline,'<');
+	std::stringstream header;
+	header << checkline;
+	header >> checkline;
+	responseTop.push_back(checkline);
+	header >> checkline;
+	responseTop.push_back(checkline);
+	header >> checkline;
+	responseTop.push_back(checkline);
+	getline(header,checkline,'\n');
+	httpParams.insert({"ResponseTop",responseTop});
+
+	//Gets the params of HTTP
+	while (!header.eof() ) {
+		getline(header,checkline,'\n');
+
+		std::string paramName;
+		std::vector<std::string> paramContent;
+		std::stringstream param;
+		param << checkline;
+		getline(param,checkline,':');
+		paramName = checkline;
+		getline(param,checkline,'\r');
+		std::stringstream paramContentStream;
+		paramContentStream << checkline;
+		while(!paramContentStream.eof()){
+			std::string checkparam;
+			paramContentStream >> checkparam;
+			paramContent.push_back(checkparam);
+		}
+
+		httpParams.insert({paramName,paramContent});
+	}
+
+	//Getting the content of a response
+	std::stringstream responseContent;
+	responseContent << '<';
+	while(!streamresponse.eof()){
+		getline(streamresponse,checkline,'\n');
+		responseContent << checkline;
+	}
+	httpParams.insert({"HTML",{responseContent.str()}});
+	return httpParams;
+}
+

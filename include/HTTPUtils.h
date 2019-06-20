@@ -18,8 +18,9 @@
             void SendMessage(std::string message);
             std::string ReceiveMessage();
 
-            void MakeRequest(std::string address,std::string request);
-            void infoDump(std::string filename,char* buffer);
+            char* MakeRequest(std::string address,std::string request);
+            void infoDump(std::string filename,std::string content);
+            std::map<std::string,std::vector<std::string>> ParseResponse(char* response);
         private:
             int port;
             std::string ip;
