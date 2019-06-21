@@ -15,8 +15,9 @@
     class HTTPUtils{
         public:
             HTTPUtils(int port,std::string ip);
-            void SendMessage(std::string message);
-            std::string ReceiveMessage();
+            // void SendMessage(std::string message);
+            char* ListenForResponse(int socket);
+
 
             char* MakeRequest(std::string address,std::string request);
             void infoDump(std::string filename,std::string content);
