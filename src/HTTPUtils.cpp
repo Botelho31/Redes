@@ -96,22 +96,23 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 
 	//Getting the HTTP Header
 	std::vector<std::string> responseTop;
-	getline(streamresponse,checkline,'<');
-	std::stringstream header;
-	header << checkline;
-	header >> checkline;
+	streamresponse >> checkline;
 	responseTop.push_back(checkline);
-	header >> checkline;
+	streamresponse >> checkline;
 	responseTop.push_back(checkline);
-	header >> checkline;
+	streamresponse >> checkline;
 	responseTop.push_back(checkline);
-	getline(header,checkline,'\n');
-	httpParams.insert({"ResponseTop",responseTop});
+	getline(streamresponse,checkline,'\n');
+	httpParams.insert({"ResponseHeader",responseTop});
 
 	//Gets the params of HTTP
-	while (!header.eof() ) {
-		getline(header,checkline,'\n');
-
+	while (!streamresponse.eof() ) {
+		getline(streamresponse,checkline,'\n');
+		std::cout << checkline << std::endl;
+		if(checkline == "\r"){
+			std::cout << "--End Of Header--" << std::endl;
+			break;
+		}
 		std::string paramName;
 		std::vector<std::string> paramContent;
 		std::stringstream param;
@@ -132,7 +133,6 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 
 	//Getting the content of a response
 	std::stringstream responseContent;
-	responseContent << '<';
 	while(!streamresponse.eof()){
 		getline(streamresponse,checkline,'\n');
 		responseContent << checkline;

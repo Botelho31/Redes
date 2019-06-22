@@ -9,7 +9,7 @@ char* Server::ListenFor(int port){
 	char buffer[64000] = { 0 };
 	fd_set rfds; 
 
-	tv.tv_sec = 0.01;
+	tv.tv_sec = 0.1;
 	tv.tv_usec = 0;
 	
 
@@ -70,8 +70,8 @@ char* Server::ListenFor(int port){
 		}
 	}
 
-	std::cout << std::endl;
 	std::cout << "Finished Reading" << std::endl;
+	std::cout << std::endl;
 	buffer[total] = 0;
 	char* test = buffer;
 
@@ -79,9 +79,12 @@ char* Server::ListenFor(int port){
 	std::stringstream request;
 	request << test;
 	std::cout << test << std::endl;
-	char* response = http->MakeRequest("www.ba.gov.br",request.str());
+	std::cout << std::endl;
+	char* response = http->MakeRequest("www.google.com",request.str());
 	std::stringstream responseToClient;
 	responseToClient << response;
+	std::cout << response << std::endl;
+	std::cout << std::endl;
 	send(new_socket, responseToClient.str().c_str(), strlen(responseToClient.str().c_str()), 0);
 
 	return test;
