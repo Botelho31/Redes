@@ -21,7 +21,9 @@
 
             char* MakeRequest(std::string address,std::string request);
             void infoDump(std::string filename,std::string content);
-            std::map<std::string,std::vector<std::string>> ParseResponse(char* response);
+            std::map<std::string,std::vector<std::string>> ParseResponse(char* response,bool printHeader = false,bool printBody = false);
+
+            std::string RemovePort(std::string);
         private:
             int port;
             std::string ip;

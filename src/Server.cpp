@@ -80,7 +80,8 @@ char* Server::ListenFor(int port){
 	request << test;
 	std::cout << test << std::endl;
 	std::cout << std::endl;
-	char* response = http->MakeRequest("www.google.com",request.str());
+	std::cout << http->RemovePort(http->ParseResponse(test)["Host"][0]) << std::endl;
+	char* response = http->MakeRequest(http->RemovePort(http->ParseResponse(test)["Host"][0]),request.str());
 	std::stringstream responseToClient;
 	responseToClient << response;
 	std::cout << response << std::endl;

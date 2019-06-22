@@ -88,7 +88,7 @@ void HTTPUtils::infoDump(std::string filename,std::string content){
     savefile.close();
 }
 
-std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* response){
+std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* response,bool printHeader,bool printBody){
 	std::map<std::string,std::vector<std::string>> httpParams;
 	std::stringstream streamresponse;
 	streamresponse << response;
@@ -104,13 +104,24 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 	responseTop.push_back(checkline);
 	getline(streamresponse,checkline,'\n');
 	httpParams.insert({"ResponseHeader",responseTop});
+	if(printHeader){
+		for(int i = 0;i < responseTop.size();i ++){
+			std::cout << responseTop[i];
+		}
+		std::cout << checkline;
+		std::cout << std::endl;
+	}
 
 	//Gets the params of HTTP
 	while (!streamresponse.eof() ) {
 		getline(streamresponse,checkline,'\n');
-		std::cout << checkline << std::endl;
+		if(printHeader){
+			std::cout << checkline << std::endl;
+		}
 		if(checkline == "\r"){
-			std::cout << "--End Of Header--" << std::endl;
+			if(printHeader){
+				std::cout << "--End Of Header--" << std::endl;
+			}
 			break;
 		}
 		std::string paramName;
@@ -137,7 +148,16 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 		getline(streamresponse,checkline,'\n');
 		responseContent << checkline;
 	}
+	if(printBody){
+		std::cout << responseContent.str() << std::endl;
+	}
 	httpParams.insert({"HTML",{responseContent.str()}});
 	return httpParams;
 }
 
+std::string HTTPUtils::RemovePort(std::string url){
+	std::stringstream endereco;
+	endereco << url;
+	getline(endereco,url,':');
+	return url;
+}
