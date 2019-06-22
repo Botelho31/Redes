@@ -3,9 +3,18 @@
 char* Server::ListenFor(int port){
 	int server_fd, new_socket, new_socket2, valread;
 	struct sockaddr_in address;
+	struct timeval tv;
 	int opt = 1;
 	int addrlen = sizeof(address);
 	char buffer[64000] = { 0 };
+	fd_set rfds; 
+
+	tv.tv_sec = 10;
+	tv.tv_usec = 0;
+	
+
+	FD_ZERO(&rfds);
+	FD_SET(0, &rfds);
 
 	// Creating socket file descriptor 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -50,9 +59,22 @@ char* Server::ListenFor(int port){
 	
 	size_t size = sizeof(buffer);
 	size_t total = 0, n = 0;
-    while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
-        total += n;
-    }
+
+	int flag = select(1, &rfds, NULL, NULL, &tv);
+	std::cout << flag << std::endl;
+	if(flag != 0 && flag != -1){
+		std::cout << "Entrou no if" << std::endl;
+		while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
+			total += n;
+			std::cout << n << std::endl;
+			int flag = select(1, &rfds, NULL, NULL, &tv);
+			if (flag == 0 || flag == 1){
+				std::cout << "Timeout" << std::endl;
+				break;
+			}
+		}
+	}
+	std::cout << "Loop terminado" << std::endl;
     buffer[total] = 0;
 
 	char* test = buffer;
