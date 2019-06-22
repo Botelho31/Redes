@@ -15,7 +15,7 @@
     class HTTPUtils{
         public:
             HTTPUtils(int port,std::string ip);
-            // void SendMessage(std::string message);
+            void SendMessage(std::string message);
             char* ListenForResponse(int socket);
 
 

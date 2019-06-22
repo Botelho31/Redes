@@ -9,7 +9,7 @@ char* Server::ListenFor(int port){
 	char buffer[64000] = { 0 };
 	fd_set rfds; 
 
-	tv.tv_sec = 10;
+	tv.tv_sec = 0.01;
 	tv.tv_usec = 0;
 	
 
@@ -60,24 +60,29 @@ char* Server::ListenFor(int port){
 	size_t size = sizeof(buffer);
 	size_t total = 0, n = 0;
 
-	int flag = select(1, &rfds, NULL, NULL, &tv);
-	std::cout << flag << std::endl;
-	if(flag != 0 && flag != -1){
-		std::cout << "Entrou no if" << std::endl;
-		while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
-			total += n;
-			std::cout << n << std::endl;
-			int flag = select(1, &rfds, NULL, NULL, &tv);
-			if (flag == 0 || flag == 1){
-				std::cout << "Timeout" << std::endl;
-				break;
-			}
+	while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
+		total += n;
+		std::cout << n << std::endl;
+		int flag = select(1, &rfds, NULL, NULL, &tv);
+		if (flag == 0 || flag == 1){
+			std::cout << "Timeout" << std::endl;
+			break;
 		}
 	}
-	std::cout << "Loop terminado" << std::endl;
-    buffer[total] = 0;
 
+	std::cout << std::endl;
+	std::cout << "Finished Reading" << std::endl;
+	buffer[total] = 0;
 	char* test = buffer;
+
+	HTTPUtils* http = new HTTPUtils(port,"127.0.0.1");
+	std::stringstream request;
+	request << test;
+	std::cout << test << std::endl;
+	char* response = http->MakeRequest("www.ba.gov.br",request.str());
+	std::stringstream responseToClient;
+	responseToClient << response;
+	send(new_socket, responseToClient.str().c_str(), strlen(responseToClient.str().c_str()), 0);
 
 	return test;
 }

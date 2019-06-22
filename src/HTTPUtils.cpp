@@ -10,33 +10,31 @@ HTTPUtils::HTTPUtils(int port,std::string ip){
 
 }
 
-// void HTTPUtils::SendMessage(std::string Message){
-//     struct sockaddr_in address;
-// 	struct sockaddr_in serv_addr;
-// 	const char* message = Message.c_str();
-// 	char buffer[1024] = { 0 };
-// 	memset(&serv_addr, '0', sizeof(serv_addr));
+void HTTPUtils::SendMessage(std::string Message){
+    struct sockaddr_in address;
+	struct sockaddr_in serv_addr;
+	const char* message = Message.c_str();
+	memset(&serv_addr, '0', sizeof(serv_addr));
 
-// 	serv_addr.sin_family = AF_INET;
-// 	serv_addr.sin_port = htons(port);
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(port);
 
-// 	// Convert IPv4 and IPv6 addresses from text to binary form 
-// 	if (inet_pton(AF_INET, this->ip.c_str(), &serv_addr.sin_addr) <= 0)
-// 	{
-// 		printf("\nInvalid address/ Address not supported \n");
-// 		return;
-// 	}
+	// Convert IPv4 and IPv6 addresses from text to binary form 
+	if (inet_pton(AF_INET, this->ip.c_str(), &serv_addr.sin_addr) <= 0)
+	{
+		printf("\nInvalid address/ Address not supported \n");
+		return;
+	}
 
-// 	if (connect(this->sock, (struct sockaddr*) & serv_addr, sizeof(serv_addr)) < 0)
-// 	{
-// 		printf("\nConnection Failed \n");
-// 		return;
-// 	}
+	if (connect(this->sock, (struct sockaddr*) & serv_addr, sizeof(serv_addr)) < 0)
+	{
+		printf("\nConnection Failed \n");
+		return;
+	}
 
-// 	printf("Client: Sending Hello\n");
-// 	send(sock, message, strlen(message), 0);
-// 	return;
-// }
+	send(sock, message, strlen(message), 0);
+	return;
+}
 
 char* HTTPUtils::ListenForResponse(int socket){
 	char buffer[6400] = { 0 };
