@@ -12,17 +12,18 @@
     #include <sys/types.h>
     #include <netdb.h>
     #include <thread>
+    #include "HTTPRequest.h"
+
+    class HTTPRequest;
 
     class HTTPUtils{
         public:
             HTTPUtils(int port,std::string ip);
             void SendMessage(std::string message);
-            char* ListenForResponse(int socket);
-
 
             char* MakeRequest(std::string address,std::string request);
             void infoDump(std::string filename,std::string content);
-            std::map<std::string,std::vector<std::string>> ParseResponse(char* response,bool printHeader = false,bool printBody = false);
+            HTTPRequest ParseResponse(char* response,bool printHeader = false,bool printBody = false);
 
             std::string RemovePort(std::string);
         private:

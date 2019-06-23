@@ -85,20 +85,16 @@ void Server::ListenFor(){
 		request << test;
 		std::cout << test << std::endl;
 		std::cout << std::endl;
-		// std::cout << http->RemovePort(http->ParseResponse(test)["Host"][0]) << std::endl;
-		if(http->ParseResponse(test)["ResponseHeader"][0] == "CONNECT"){
+
+		HTTPRequest HTTPresponse = http->ParseResponse(test);
+		if(HTTPresponse.method == "CONNECT"){
 			std::cout << "Discarding HTTPS request" << std::endl;
 		}else{
-			char* response = http->MakeRequest(http->RemovePort(http->ParseResponse(test)["Host"][0]),request.str());
-			std::stringstream responseToClient;
-			// responseToClient << "HTTP/1.1 200 OK\r\n\r\n <html><body>OI MEU NOME E GOKU<body></html>";
-			responseToClient << response;
-			std::cout << response << std::endl;
-			std::cout << std::endl;
-			std::cout << "OI " << std::endl;
-			send(new_socket, responseToClient.str().c_str(), strlen(responseToClient.str().c_str()), 0);
-			if(http->ParseResponse(test)["Connection"][0] == "keep-alive"){
-				std::cout << "KEEPALIVE" << std::endl;
+			char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
+			std::cout << "Got Response " << std::endl;
+			send(new_socket, response, strlen(response), 0);
+			if(HTTPresponse.connection == "keep-alive"){
+				std::cout << "KeepAlive" << std::endl;
 				KeepAlive(new_socket);
 			}
 		}
@@ -132,31 +128,12 @@ void Server::KeepAlive(int new_socket){
 		HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
 		std::stringstream request;
 		request << test;
-		std::cout << test << std::endl;
-		std::cout << std::endl;
-		// std::cout << http->RemovePort(http->ParseResponse(test)["Host"][0]) << std::endl;
-		if(http->ParseResponse(test)["ResponseHeader"][0] == "CONNECT"){
-			std::cout << "Discarding HTTPS request" << std::endl;
+		HTTPRequest HTTPresponse = http->ParseResponse(test);
+		if(HTTPresponse.host == ""){
+			std::cout << "Discarding empty Request" << std::endl;
 		}else{
-			// if(http->ParseResponse(test)["Error"][0] == "False"){
-				for(auto it = http->ParseResponse(test).cbegin(); it != http->ParseResponse(test).cend(); ++it){
-					std::cout << it->first << ": ";
-					for(int i = 0;i < it->second.size();i++){
-						std::cout << it->second[i] << " ";
-					}
-					std::cout << std::endl;
-				}
-				char* response = http->MakeRequest(http->RemovePort(http->ParseResponse(test)["Host"][0]),request.str());
-				std::stringstream responseToClient;
-				// responseToClient << "HTTP/1.1 200 OK\r\n\r\n <html><body>OI MEU NOME E GOKU<body></html>";
-				responseToClient << response;
-				// std::cout << response << std::endl;
-				// std::cout << std::endl;
-				// std::cout << "OI " << std::endl;
-				send(new_socket, responseToClient.str().c_str(), strlen(responseToClient.str().c_str()), 0);
-			// }else{
-			// 	std::cout << "Error Parsing Response" << std::endl;
-			// }
+			char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
+			send(new_socket, response, strlen(response), 0);
 		}
 	}
 		

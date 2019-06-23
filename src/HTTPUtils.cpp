@@ -35,18 +35,6 @@ void HTTPUtils::SendMessage(std::string Message){
 	return;
 }
 
-char* HTTPUtils::ListenForResponse(int socket){
-	char buffer[6400] = { 0 };
-	size_t size = sizeof(buffer);
-	size_t total = 0, n = 0;
-    while((n = recv(socket, buffer+total, size-total-1, 0)) > 0) {
-        total += n;
-    }
-    buffer[total] = 0;
-	char* test = buffer;
-	return test;
-}
-
 char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	struct addrinfo hints , *results;
 	int rv;
@@ -58,7 +46,7 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 
 	struct timeval tv;
 	fd_set rfds; 
-	tv.tv_sec = 0.01;
+	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	
 
@@ -81,18 +69,19 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	size_t total = 0, n = 0;
     while((n = recv(sockfd, buffer+total, size-total-1, 0)) > 0) {
         total += n;
-		// int flag = select(1, &rfds, NULL, NULL, &tv);
-		// if (flag == 0 || flag == 1){
-		// 	std::cout << "Timeout" << std::endl;
-		// 	break;
-		// }
+		int flag = select(1, &rfds, NULL, NULL, &tv);
+		if (flag == 0 || flag == 1){
+			std::cout << "Timeout" << std::endl;
+			break;
+		}
     }
     buffer[total] = 0;
     freeaddrinfo(results);
 	char* response = buffer; 
 	close(sockfd);
 
-
+	// std::stringstream responseStream;
+	// responseStream << response;
 	return response;
 
 }
@@ -104,7 +93,7 @@ void HTTPUtils::infoDump(std::string filename,std::string content){
     savefile.close();
 }
 
-std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* response,bool printHeader,bool printBody){
+HTTPRequest HTTPUtils::ParseResponse(char* response,bool printHeader,bool printBody){
 	std::map<std::string,std::vector<std::string>> httpParams;
 	std::stringstream streamresponse;
 	streamresponse << response;
@@ -168,12 +157,9 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 		std::cout << responseContent.str() << std::endl;
 	}
 	httpParams.insert({"HTML",{responseContent.str()}});
-	if((httpParams.find("Date") == httpParams.end()) || (httpParams.find("Host") == httpParams.end())){
-		httpParams.insert({"Error",{"True"}});
-	}else{
-		httpParams.insert({"Error",{"False"}});
-	}
-	return httpParams;
+
+	HTTPRequest request = HTTPRequest(httpParams);
+	return request;
 }
 
 std::string HTTPUtils::RemovePort(std::string url){
@@ -184,7 +170,6 @@ std::string HTTPUtils::RemovePort(std::string url){
 		getline(endereco,url,'/');
 	}
 	endereco >> url;
-	std::cout << url << std::endl;
 	getline(endereco,url,':');
 	return url;
 }
