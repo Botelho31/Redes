@@ -11,6 +11,7 @@
     #include <arpa/inet.h>
     #include <sys/types.h>
     #include <netdb.h>
+    #include <thread>
 
     class HTTPUtils{
         public:

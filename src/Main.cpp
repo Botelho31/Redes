@@ -7,10 +7,8 @@ int main(int argc, char const* argv[]){
 	// std::map<std::string,std::vector<std::string>> responseMap = http->ParseResponse(response);
 	// http->infoDump("dump/dump.html",responseMap["HTML"][0]);
 
-	Server server;
-	while(true){
-		char* serverresponse = server.ListenFor(8228);
-	}
+	Server server(8228);
+	server.ListenFor();
 
 
 

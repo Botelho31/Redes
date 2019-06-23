@@ -4,10 +4,9 @@ HTTPUtils::HTTPUtils(int port,std::string ip){
     this->port = port;
     this->ip = ip;
 	this->sock = 0;
-	if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-		printf("\n Socket creation error \n");
-	}
-
+	// if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
+	// 	printf("\n Socket creation error \n");
+	// }
 }
 
 void HTTPUtils::SendMessage(std::string Message){
@@ -56,6 +55,16 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	strcpy(inputVal, address.c_str());
 	char buffer[64000];
 	memset(&hints,0,sizeof hints);
+
+	struct timeval tv;
+	fd_set rfds; 
+	tv.tv_sec = 0.01;
+	tv.tv_usec = 0;
+	
+
+	FD_ZERO(&rfds);
+	FD_SET(0, &rfds);
+
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
@@ -72,10 +81,17 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	size_t total = 0, n = 0;
     while((n = recv(sockfd, buffer+total, size-total-1, 0)) > 0) {
         total += n;
+		// int flag = select(1, &rfds, NULL, NULL, &tv);
+		// if (flag == 0 || flag == 1){
+		// 	std::cout << "Timeout" << std::endl;
+		// 	break;
+		// }
     }
     buffer[total] = 0;
     freeaddrinfo(results);
 	char* response = buffer; 
+	close(sockfd);
+
 
 	return response;
 
@@ -152,12 +168,23 @@ std::map<std::string,std::vector<std::string>> HTTPUtils::ParseResponse(char* re
 		std::cout << responseContent.str() << std::endl;
 	}
 	httpParams.insert({"HTML",{responseContent.str()}});
+	if((httpParams.find("Date") == httpParams.end()) || (httpParams.find("Host") == httpParams.end())){
+		httpParams.insert({"Error",{"True"}});
+	}else{
+		httpParams.insert({"Error",{"False"}});
+	}
 	return httpParams;
 }
 
 std::string HTTPUtils::RemovePort(std::string url){
 	std::stringstream endereco;
 	endereco << url;
+	getline(endereco,url,'/');
+	if(url == "http:"){
+		getline(endereco,url,'/');
+	}
+	endereco >> url;
+	std::cout << url << std::endl;
 	getline(endereco,url,':');
 	return url;
 }
