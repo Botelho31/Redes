@@ -69,11 +69,11 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 	size_t total = 0, n = 0;
     while((n = recv(sockfd, buffer+total, size-total-1, 0)) > 0) {
         total += n;
-		int flag = select(1, &rfds, NULL, NULL, &tv);
-		if (flag == 0 || flag == 1){
-			std::cout << "Timeout" << std::endl;
-			break;
-		}
+		// int flag = select(1, &rfds, NULL, NULL, &tv);
+		// if (flag == 0 || flag == 1){
+		// 	std::cout << "Timeout" << std::endl;
+		// 	break;
+		// }
     }
     buffer[total] = 0;
     freeaddrinfo(results);

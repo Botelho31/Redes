@@ -16,6 +16,8 @@ DEP_PATH = dep
 CPP_FILES = $(wildcard $(SRC_PATH)/*.cpp)
 OBJ_FILES = $(addprefix $(BIN_PATH)/,$(notdir $(CPP_FILES:.cpp=.o)))
 DEP_FILES = $(wildcard $(DEP_PATH)/*.d)
+
+LIBS = -pthread
  
 EXEC = TRABREDES
  

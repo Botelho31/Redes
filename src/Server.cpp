@@ -6,13 +6,6 @@ Server::Server(int port){
 	this->opt = 1;
 	this->addrlen = sizeof(address);
 
-	this->tv.tv_sec = 1;
-	this->tv.tv_usec = 0;
-	
-
-	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
-
 	// Creating socket file descriptor 
 	if ((this->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
@@ -52,8 +45,12 @@ void Server::ListenFor(){
 		exit(EXIT_FAILURE);
 	}
 
+	pthread_t threads[60];
+    int i = 0;
+	int threadcount = 0;
+
 	while(1){
-		char buffer[64000] = { 0 };
+
 		if ((new_socket = accept(server_fd, (struct sockaddr*) & address,
 			(socklen_t*)& addrlen)) < 0) //Blocked until connect is called in the client
 		{
@@ -63,78 +60,71 @@ void Server::ListenFor(){
 
 		printf("Server accepted connection, reading message\n");
 		
-		size_t size = sizeof(buffer);
-		size_t total = 0, n = 0;
-		while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
-			total += n;
-			std::cout << n << std::endl;
-			int flag = select(1, &rfds, NULL, NULL, &tv);
-			if (flag == 0 || flag == 1){
-				std::cout << "Timeout" << std::endl;
-				break;
-			}
+		if( pthread_create(&threads[i], NULL, HandleRequest, &new_socket) != 0 ){
+           printf("Failed to create thread\n");
 		}
-
-		std::cout << "Finished Reading" << std::endl;
-		std::cout << std::endl;
-		buffer[total] = 0;
-		char* test = buffer;
-
-		HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
-		std::stringstream request;
-		request << test;
-		std::cout << test << std::endl;
-		std::cout << std::endl;
-
-		HTTPRequest HTTPresponse = http->ParseResponse(test);
-		if(HTTPresponse.method == "CONNECT"){
-			std::cout << "Discarding HTTPS request" << std::endl;
-		}else{
-			char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
-			std::cout << "Got Response " << std::endl;
-			send(new_socket, response, strlen(response), 0);
-			if(HTTPresponse.connection == "keep-alive"){
-				std::cout << "KeepAlive" << std::endl;
-				KeepAlive(new_socket);
-			}
-		}
-
-		close(new_socket);
-	}
-	
+        if( i >= 50)
+        {
+          i = 0;
+          while(i < 50)
+          {
+            pthread_join(threads[i++],NULL);
+          }
+          i = 0;
+        }	
+		threadcount ++;
+	}	
 }
 
-void Server::KeepAlive(int new_socket){
+void* Server::HandleRequest(void *arg){
 
-	while(1){
-		char buffer[64000] = { 0 };
-		size_t size = sizeof(buffer);
-		size_t total = 0, n = 0;
-		while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
-			total += n;
-			std::cout << n << std::endl;
-			int flag = select(1, &rfds, NULL, NULL, &tv);
-			if (flag == 0 || flag == 1){
-				std::cout << "Timeout" << std::endl;
-				break;
-			}
-		}
+	int new_socket = *((int *)arg);
+	struct timeval tv;
+	fd_set rfds; 
 
-		std::cout << "Finished Reading" << std::endl;
-		std::cout << std::endl;
-		buffer[total] = 0;
-		char* test = buffer;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
 
-		HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
-		std::stringstream request;
-		request << test;
-		HTTPRequest HTTPresponse = http->ParseResponse(test);
-		if(HTTPresponse.host == ""){
-			std::cout << "Discarding empty Request" << std::endl;
-		}else{
-			char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
-			send(new_socket, response, strlen(response), 0);
+	FD_ZERO(&rfds);
+	FD_SET(0, &rfds);
+
+	char buffer[64000] = { 0 };
+	size_t size = sizeof(buffer);
+	size_t total = 0, n = 0;
+	while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
+		total += n;
+		int flag = select(1, &rfds, NULL, NULL, &tv);
+		if (flag == 0 || flag == 1){
+			break;
 		}
 	}
+
+	std::cout << "Received Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+	buffer[total] = 0;
+	char* test = buffer;
+	std::cout << test << std::endl;
+
+	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
+	std::stringstream request;
+	request << test;
+	HTTPRequest HTTPresponse = http->ParseResponse(test);
+	if(HTTPresponse.host == ""){
+		std::cout << "Discarding empty Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+	}else if(HTTPresponse.method == "CONNECT"){
+		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
+	}else{
+		std::cout << "Made Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
+		std::cout << "Got Response" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		send(new_socket, response, strlen(response), 0);
+		if(HTTPresponse.connection == "keep-alive"){
+			HandleRequest(&new_socket);
+		}
+	}
+
+	// if(closesocket){
+		close(new_socket);
+		pthread_exit(NULL);
+	// }
 		
 }
