@@ -110,21 +110,25 @@ void* Server::HandleRequest(void *arg){
 	HTTPRequest HTTPresponse = http->ParseResponse(test);
 	if(HTTPresponse.host == ""){
 		std::cout << "Discarding empty Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		if (recv(new_socket, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) == 0) {
+			close(new_socket);
+			pthread_exit(NULL);
+		}else{
+			HandleRequest(&new_socket);
+		}
 	}else if(HTTPresponse.method == "CONNECT"){
 		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
 	}else{
-		std::cout << "Made Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		std::cout << "Made Request" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
 		char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
-		std::cout << "Got Response" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		std::cout << "Got Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl << response << std::endl;
 		send(new_socket, response, strlen(response), 0);
 		if(HTTPresponse.connection == "keep-alive"){
 			HandleRequest(&new_socket);
 		}
 	}
 
-	// if(closesocket){
-		close(new_socket);
-		pthread_exit(NULL);
-	// }
+	close(new_socket);
+	pthread_exit(NULL);
 		
 }
