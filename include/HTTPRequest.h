@@ -8,5 +8,6 @@
             std::string host;
             std::string method;
             std::string connection;
+            std::string html;
     };
 #endif

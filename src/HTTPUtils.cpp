@@ -4,9 +4,6 @@ HTTPUtils::HTTPUtils(int port,std::string ip){
     this->port = port;
     this->ip = ip;
 	this->sock = 0;
-	// if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0){
-	// 	printf("\n Socket creation error \n");
-	// }
 }
 
 void HTTPUtils::SendMessage(std::string Message){
@@ -86,7 +83,68 @@ char* HTTPUtils::MakeRequest(std::string address,std::string request){
 
 }
 
-void HTTPUtils::infoDump(std::string filename,std::string content){
+void HTTPUtils::spider(std::string sitename){
+	char* response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
+	std::cout << response << std::endl;
+	HTTPRequest request = ParseResponse(response);
+	std::stringstream html;
+	std::string checkline;
+	html << request.html;
+
+	Site site;
+	site.url = sitename;
+
+	while(!html.eof()){
+		getline(html,checkline,'<');
+		getline(html,checkline,'>');
+		std::stringstream tag;
+		tag << checkline;
+		if(checkline.c_str()[0] == '/'){
+			continue;
+		}else{
+			tag >> checkline;
+			if(checkline == "a"){
+				bool foundhref = false;
+				while(!foundhref){
+					tag >> checkline;
+					std::stringstream href;
+					href << checkline;
+					getline(href,checkline,'=');
+					if(checkline == "href"){
+						getline(href,checkline,'"');
+						getline(href,checkline,'"');
+						site.conexoes.push_back(checkline);
+						bool alreadyvisited = false;
+						if(checkline == sitename){
+							alreadyvisited = true;
+						}
+						for(int i  = 0;i < sites.size();i++){
+							if(sites[i].url == checkline){
+								alreadyvisited = true;
+							}
+						}
+						if(!alreadyvisited){
+							if(isUrl(checkline)){
+								spider(checkline);
+							}
+						}
+						std::cout << checkline << std::endl;
+						foundhref = true;
+					}
+					if(href.eof()){
+						foundhref = true;
+					}
+					if(tag.eof()){
+						foundhref = true;
+					}
+				}
+			}
+		}
+	}
+	sites.push_back(site);
+}
+
+void HTTPUtils::saveFile(std::string filename,std::string content){
 	std::ofstream savefile;
     savefile.open (filename);
     savefile << content;
@@ -162,14 +220,39 @@ HTTPRequest HTTPUtils::ParseResponse(char* response,bool printHeader,bool printB
 	return request;
 }
 
-std::string HTTPUtils::RemovePort(std::string url){
+std::string HTTPUtils::CleanURL(std::string url){
 	std::stringstream endereco;
 	endereco << url;
 	getline(endereco,url,'/');
-	if(url == "http:"){
+	if((url == "http:") || (url == "https:")){
 		getline(endereco,url,'/');
 	}
 	endereco >> url;
-	getline(endereco,url,':');
+	std::stringstream newendereco;
+	newendereco << url;
+	getline(newendereco,url,'/');
 	return url;
+}
+
+bool HTTPUtils::isUrl(std::string url){
+	url = CleanURL(url);
+	std::stringstream urlStream;
+	urlStream << url;
+	if((url.c_str()[0] == 'w') && (url.c_str()[1] == 'w') && (url.c_str()[2] == 'w') && (url.c_str()[3] == '.')){
+		return true;
+	}
+	if((url.c_str()[url.size() - 1] == 'm') && (url.c_str()[url.size() - 2] == 'o') && (url.c_str()[url.size() - 3] == 'c') && (url.c_str()[url.size() - 4] == '.')){
+		return true;
+	}
+	if((url.c_str()[url.size() - 1] == 'r') && (url.c_str()[url.size() - 2] == 'b') && (url.c_str()[url.size() - 3] == '.')){
+		return true;
+	}
+	return false;
+}
+
+std::string HTTPUtils::GetRequest(std::string sitename){
+
+	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n\r\n";
+	std::cout << getRequest << std::endl;
+	return getRequest;
 }

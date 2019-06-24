@@ -3,6 +3,7 @@ HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpPara
     method = "";
     connection = "";
     host = "";
+    html = "";
     for(auto it = httpParams.cbegin(); it != httpParams.cend(); ++it){
         for(int i = 0;i < it->second.size();i++){
             if((it->first == "ResponseHeader") && (i == 0)){
@@ -13,6 +14,9 @@ HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpPara
             }
             if((it->first == "Connection") && (i == 0)){
                 this->connection = it->second[i];
+            }
+            if((it->first == "HTML") && (i == 0)){
+                this->html = it->second[i];
             }
         }
     }

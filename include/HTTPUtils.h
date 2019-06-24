@@ -22,13 +22,23 @@
             void SendMessage(std::string message);
 
             char* MakeRequest(std::string address,std::string request);
-            void infoDump(std::string filename,std::string content);
+            void spider(std::string sitename);
+            void saveFile(std::string filename,std::string content);
             HTTPRequest ParseResponse(char* response,bool printHeader = false,bool printBody = false);
 
-            std::string RemovePort(std::string);
+            std::string CleanURL(std::string url);
+            bool isUrl(std::string url);
+            std::string GetRequest(std::string link);
         private:
+            class Site{
+                public:
+                    std::string url;
+                    std::vector<std::string> conexoes;
+            };
             int port;
             std::string ip;
             int sock;
+
+            std::vector<Site> sites;
     };
 #endif

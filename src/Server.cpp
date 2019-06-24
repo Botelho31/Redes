@@ -120,7 +120,7 @@ void* Server::HandleRequest(void *arg){
 		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
 	}else{
 		std::cout << "Made Request" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-		char* response = http->MakeRequest(http->RemovePort(HTTPresponse.host),request.str());
+		char* response = http->MakeRequest(http->CleanURL(HTTPresponse.host),request.str());
 		std::cout << "Got Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl << response << std::endl;
 		send(new_socket, response, strlen(response), 0);
 		if(HTTPresponse.connection == "keep-alive"){
