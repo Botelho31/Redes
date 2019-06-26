@@ -1,5 +1,7 @@
 #include "../include/HTTPUtils.h"
 
+int HTTPUtils::Site::currentID = 0;
+
 HTTPUtils::HTTPUtils(int port,std::string ip){
     this->port = port;
     this->ip = ip;
@@ -71,10 +73,12 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
 }
 
-void HTTPUtils::spider(std::string sitename,int depthcounter){
-	if(depthcounter >= 5){
+void HTTPUtils::spider(HTTPUtils::Site* site,int depthcounter){
+	if(depthcounter >= 2){
+		// std::cout << "Return from depth" << std::endl;
 		return;
 	}
+	std::string sitename = site->url;
 	depthcounter ++;
 	std::cout << "Depth: " << depthcounter << std::endl;
 	std::string response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
@@ -83,9 +87,6 @@ void HTTPUtils::spider(std::string sitename,int depthcounter){
 	std::stringstream html;
 	std::string checkline;
 	html << request.html;
-
-	Site site;
-	site.url = sitename;
 
 	while(!html.eof()){
 		getline(html,checkline,'<');
@@ -116,14 +117,15 @@ void HTTPUtils::spider(std::string sitename,int depthcounter){
 							alreadyvisited = true;
 						}
 						for(int i  = 0;i < sites.size();i++){
-							if(sites[i].url == checkline){
+							if(sites[i]->url == checkline){
 								alreadyvisited = true;
 							}
 						}
 						if(!alreadyvisited){
 							if(isUrl(checkline)){
-								site.conexoes.push_back(checkline);
-								spider(checkline,depthcounter);
+								Site *newsite = new Site(checkline);
+								site->conexoes.push_back(newsite);
+								spider(newsite,depthcounter);
 							}
 						}
 						foundhref = true;
@@ -235,6 +237,37 @@ std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 		return url;
 	}
 	return url;
+}
+
+void HTTPUtils::MakeSpiderGraph(){
+    std::ofstream myfile;
+    myfile.open ("spider.dot");
+    myfile << "digraph {\n";
+
+	myfile << "\t" << "compound=true;" << std::endl;
+	myfile << "\t" << "overlap=scalexy;" << std::endl;
+	myfile << "\t" << "splines=true;" << std::endl;
+
+	// myfile << "\t" << "overlap=false;" << std::endl;
+	myfile << "\t" << "layout=\"neato\";" << std::endl;
+	// myfile << "\t" << "nodesep=\"-7\";" << std::endl;
+	myfile << "\t" << "sep=-0.4;" << std::endl;
+	// myfile << "\t" << "size=\"1000,1000\";" << std::endl;
+
+	for(int i = 0;i < sites.size();i++){
+			myfile << "\t" << sites[i]->id << " [label=\"" << sites[i]->BreakUrl() << "\"; shape=record; height=.1; fontsize=9];" << std::endl;
+        for(int j = 0;j < sites[i]->conexoes.size();j ++){
+			myfile << "\t" << sites[i]->conexoes[j]->id << " [label=\"" << sites[i]->conexoes[j]->BreakUrl() << "\"; shape=record; height=.1; fontsize=9];" << std::endl;
+        }
+    }
+    for(int i = 0;i < sites.size();i++){
+        for(int j = 0;j < sites[i]->conexoes.size();j ++){
+            myfile << "\t" << sites[i]->id << " -> " << sites[i]->conexoes[j]->id << ";\n";
+        }
+    }
+    myfile << "}\n";
+    myfile.close();
+    system("dot -Tsvg spider.dot -o spider.svg");
 }
 
 bool HTTPUtils::isUrl(std::string url){
