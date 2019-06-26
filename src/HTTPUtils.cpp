@@ -73,7 +73,7 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
 void HTTPUtils::spider(std::string sitename){
 	std::string response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
-	std::cout << response << std::endl;
+	// std::cout << response << std::endl;
 	HTTPRequest request = ParseResponse(response);
 	std::stringstream html;
 	std::string checkline;
@@ -101,6 +101,11 @@ void HTTPUtils::spider(std::string sitename){
 					if(checkline == "href"){
 						getline(href,checkline,'"');
 						getline(href,checkline,'"');
+						if(checkline.c_str()[0] == '/'){
+							std::stringstream newhref;
+							newhref << sitename << checkline;
+							checkline = newhref.str();
+						}
 						site.conexoes.push_back(checkline);
 						bool alreadyvisited = false;
 						if(checkline == sitename){
@@ -240,7 +245,7 @@ bool HTTPUtils::isUrl(std::string url){
 
 std::string HTTPUtils::GetRequest(std::string sitename){
 
-	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n" + "Connection: close" + "\r\n";
+	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n" + "Connection: close" + "\r\n\r\n";
 	std::cout << getRequest << std::endl;
 	return getRequest;
 }

@@ -45,9 +45,8 @@ void Server::ListenFor(){
 		exit(EXIT_FAILURE);
 	}
 
-	pthread_t threads[60];
+	// pthread_t threads[60];
     int i = 0;
-	int threadcount = 0;
 
 	while(1){
 
@@ -72,8 +71,7 @@ void Server::ListenFor(){
         //     pthread_join(threads[i++],NULL);
         //   }
         //   i = 0;
-        // }	
-		// threadcount ++;
+		// }
 	}	
 }
 
@@ -100,20 +98,20 @@ void* Server::HandleRequest(void *arg){
 	HTTPRequest HTTPresponse = http->ParseResponse(request);
 	if(HTTPresponse.method == ""){
 		if (recv(new_socket, &buffer, 1, MSG_PEEK | MSG_DONTWAIT) == 0) {
-			// std::cout << "Closing Connection" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+			std::cout << "Closing Connection" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
 			close(new_socket);
 			// pthread_exit(NULL);
 			return &buffer;
 		}else{
-			close(new_socket);
-			return &buffer;
-			// HandleRequest(&new_socket);
+			// close(new_socket);
+			// return &buffer;
+			HandleRequest(&new_socket);
 		}
 	}else if(HTTPresponse.method == "CONNECT"){
 		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
 	}else{
 		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),request);//HTTPresponse.GetCleanedRequest());
+		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),HTTPresponse.GetCleanedRequest());
 		if(response == ""){
 			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
 		}else{
