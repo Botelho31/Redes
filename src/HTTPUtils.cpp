@@ -71,7 +71,12 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
 }
 
-void HTTPUtils::spider(std::string sitename){
+void HTTPUtils::spider(std::string sitename,int depthcounter){
+	if(depthcounter >= 5){
+		return;
+	}
+	depthcounter ++;
+	std::cout << "Depth: " << depthcounter << std::endl;
 	std::string response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
 	// std::cout << response << std::endl;
 	HTTPRequest request = ParseResponse(response);
@@ -101,14 +106,13 @@ void HTTPUtils::spider(std::string sitename){
 					if(checkline == "href"){
 						getline(href,checkline,'"');
 						getline(href,checkline,'"');
+						bool alreadyvisited = false;
 						if(checkline.c_str()[0] == '/'){
 							std::stringstream newhref;
-							newhref << sitename << checkline;
+							newhref << CleanURL(sitename,true) << checkline;
 							checkline = newhref.str();
 						}
-						site.conexoes.push_back(checkline);
-						bool alreadyvisited = false;
-						if(checkline == sitename){
+						if((checkline == sitename) || (checkline == (sitename + "/"))){
 							alreadyvisited = true;
 						}
 						for(int i  = 0;i < sites.size();i++){
@@ -118,10 +122,10 @@ void HTTPUtils::spider(std::string sitename){
 						}
 						if(!alreadyvisited){
 							if(isUrl(checkline)){
-								spider(checkline);
+								site.conexoes.push_back(checkline);
+								spider(checkline,depthcounter);
 							}
 						}
-						std::cout << checkline << std::endl;
 						foundhref = true;
 					}
 					if(href.eof()){
@@ -213,7 +217,7 @@ HTTPRequest HTTPUtils::ParseResponse(std::string response,bool printHeader,bool 
 	return request;
 }
 
-std::string HTTPUtils::CleanURL(std::string url){
+std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 	std::stringstream endereco;
 	endereco << url;
 	getline(endereco,url,'/');
@@ -224,6 +228,12 @@ std::string HTTPUtils::CleanURL(std::string url){
 	std::stringstream newendereco;
 	newendereco << url;
 	getline(newendereco,url,'/');
+
+	if(withhttp){
+		std::stringstream withhttp;
+		withhttp << "http://" << url;
+		return url;
+	}
 	return url;
 }
 
@@ -244,7 +254,9 @@ bool HTTPUtils::isUrl(std::string url){
 }
 
 std::string HTTPUtils::GetRequest(std::string sitename){
-
+	if(sitename.c_str()[sitename.size() - 1] == '/'){
+		sitename.pop_back();
+	}
 	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n" + "Connection: close" + "\r\n\r\n";
 	std::cout << getRequest << std::endl;
 	return getRequest;

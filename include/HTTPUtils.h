@@ -22,11 +22,11 @@
             void SendMessage(std::string message);
 
             std::string MakeRequest(std::string address,std::string request);
-            void spider(std::string sitename);
+            void spider(std::string sitename,int depthcounter);
             void saveFile(std::string filename,std::string content);
             HTTPRequest ParseResponse(std::string response,bool printHeader = false,bool printBody = false);
 
-            std::string CleanURL(std::string url);
+            std::string CleanURL(std::string url,bool nopaths = false);
             bool isUrl(std::string url);
             std::string GetRequest(std::string link);
         private:
