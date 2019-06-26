@@ -21,10 +21,10 @@
             HTTPUtils(int port,std::string ip);
             void SendMessage(std::string message);
 
-            char* MakeRequest(std::string address,std::string request);
+            std::string MakeRequest(std::string address,std::string request);
             void spider(std::string sitename);
             void saveFile(std::string filename,std::string content);
-            HTTPRequest ParseResponse(char* response,bool printHeader = false,bool printBody = false);
+            HTTPRequest ParseResponse(std::string response,bool printHeader = false,bool printBody = false);
 
             std::string CleanURL(std::string url);
             bool isUrl(std::string url);

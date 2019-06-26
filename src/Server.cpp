@@ -60,75 +60,72 @@ void Server::ListenFor(){
 
 		printf("Server accepted connection, reading message\n");
 		
-		if( pthread_create(&threads[i], NULL, HandleRequest, &new_socket) != 0 ){
-           printf("Failed to create thread\n");
-		}
-        if( i >= 50)
-        {
-          i = 0;
-          while(i < 50)
-          {
-            pthread_join(threads[i++],NULL);
-          }
-          i = 0;
-        }	
-		threadcount ++;
+		HandleRequest(&new_socket);
+		// if( pthread_create(&threads[i], NULL, HandleRequest, &new_socket) != 0 ){
+        //    printf("Failed to create thread\n");
+		// }
+        // if( i >= 50)
+        // {
+        //   i = 0;
+        //   while(i < 50)
+        //   {
+        //     pthread_join(threads[i++],NULL);
+        //   }
+        //   i = 0;
+        // }	
+		// threadcount ++;
 	}	
 }
 
 void* Server::HandleRequest(void *arg){
 
 	int new_socket = *((int *)arg);
-	struct timeval tv;
-	fd_set rfds; 
+	std::ostringstream bufferStream;
+	char buffer;
 
+	struct timeval tv;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
+	setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
-	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
-
-	char buffer[64000] = { 0 };
-	size_t size = sizeof(buffer);
-	size_t total = 0, n = 0;
-	while((n = recv(new_socket, buffer+total, size-total-1, 0)) > 0) {
-		total += n;
-		int flag = select(1, &rfds, NULL, NULL, &tv);
-		if (flag == 0 || flag == 1){
-			break;
-		}
+	while(recv(new_socket, &buffer, 1, 0) > 0){
+		bufferStream << buffer;
 	}
 
 	std::cout << "Received Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-	buffer[total] = 0;
-	char* test = buffer;
-	std::cout << test << std::endl;
+	std::string request = bufferStream.str();
+	std::cout << request << std::endl;
 
 	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
-	std::stringstream request;
-	request << test;
-	HTTPRequest HTTPresponse = http->ParseResponse(test);
-	if(HTTPresponse.host == ""){
-		std::cout << "Discarding empty Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-		if (recv(new_socket, buffer, sizeof(buffer), MSG_PEEK | MSG_DONTWAIT) == 0) {
+	HTTPRequest HTTPresponse = http->ParseResponse(request);
+	if(HTTPresponse.method == ""){
+		if (recv(new_socket, &buffer, 1, MSG_PEEK | MSG_DONTWAIT) == 0) {
+			// std::cout << "Closing Connection" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
 			close(new_socket);
-			pthread_exit(NULL);
+			// pthread_exit(NULL);
+			return &buffer;
 		}else{
-			HandleRequest(&new_socket);
+			close(new_socket);
+			return &buffer;
+			// HandleRequest(&new_socket);
 		}
 	}else if(HTTPresponse.method == "CONNECT"){
 		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
 	}else{
-		std::cout << "Made Request" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-		char* response = http->MakeRequest(http->CleanURL(HTTPresponse.host),request.str());
-		std::cout << "Got Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl << response << std::endl;
-		send(new_socket, response, strlen(response), 0);
-		if(HTTPresponse.connection == "keep-alive"){
-			HandleRequest(&new_socket);
+		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),request);//HTTPresponse.GetCleanedRequest());
+		if(response == ""){
+			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		}else{
+			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl << response << std::endl;
+			send(new_socket, response.c_str(), strlen(response.c_str()), 0);
+			// if(HTTPresponse.connection == "keep-alive"){
+			// 	HandleRequest(&new_socket);
+			// }
 		}
 	}
 
 	close(new_socket);
-	pthread_exit(NULL);
+	// pthread_exit(NULL);
 		
 }

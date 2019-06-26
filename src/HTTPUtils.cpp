@@ -32,59 +32,47 @@ void HTTPUtils::SendMessage(std::string Message){
 	return;
 }
 
-char* HTTPUtils::MakeRequest(std::string address,std::string request){
+std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 	struct addrinfo hints , *results;
 	int rv;
 	int sockfd;
 	char inputVal[address.size() + 1];
 	strcpy(inputVal, address.c_str());
-	char buffer[64000];
+	// char buffer[64000];
 	memset(&hints,0,sizeof hints);
-
-	struct timeval tv;
-	fd_set rfds; 
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	
-
-	FD_ZERO(&rfds);
-	FD_SET(0, &rfds);
-
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
 	if( (rv = getaddrinfo(inputVal,"80",&hints,&results)) != 0){
 		fprintf(stderr,"getaddrinfo error: %s\n",gai_strerror(rv));
+		char *responseempty = "";
+		return responseempty;
 	}
 
     sockfd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
 
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
     connect(sockfd, results->ai_addr, results->ai_addrlen);
     send(sockfd, request.c_str(), strlen(request.c_str()), 0);
-
-	size_t size = sizeof(buffer);
-	size_t total = 0, n = 0;
-    while((n = recv(sockfd, buffer+total, size-total-1, 0)) > 0) {
-        total += n;
-		// int flag = select(1, &rfds, NULL, NULL, &tv);
-		// if (flag == 0 || flag == 1){
-		// 	std::cout << "Timeout" << std::endl;
-		// 	break;
-		// }
-    }
-    buffer[total] = 0;
-    freeaddrinfo(results);
-	char* response = buffer; 
+	
+	std::ostringstream bufferStream;
+	char buffer;
+	while(recv(sockfd, &buffer, 1, 0) > 0){
+		bufferStream << buffer;
+	}
+	freeaddrinfo(results);
 	close(sockfd);
 
-	// std::stringstream responseStream;
-	// responseStream << response;
-	return response;
+	return bufferStream.str();
 
 }
 
 void HTTPUtils::spider(std::string sitename){
-	char* response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
+	std::string response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
 	std::cout << response << std::endl;
 	HTTPRequest request = ParseResponse(response);
 	std::stringstream html;
@@ -151,7 +139,7 @@ void HTTPUtils::saveFile(std::string filename,std::string content){
     savefile.close();
 }
 
-HTTPRequest HTTPUtils::ParseResponse(char* response,bool printHeader,bool printBody){
+HTTPRequest HTTPUtils::ParseResponse(std::string response,bool printHeader,bool printBody){
 	std::map<std::string,std::vector<std::string>> httpParams;
 	std::stringstream streamresponse;
 	streamresponse << response;
@@ -252,7 +240,7 @@ bool HTTPUtils::isUrl(std::string url){
 
 std::string HTTPUtils::GetRequest(std::string sitename){
 
-	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n\r\n";
+	std::string getRequest =  "GET "  + sitename + "/ HTTP/1.0\r\n" + "Host: " + CleanURL(sitename) + "\r\n" + "Connection: close" + "\r\n";
 	std::cout << getRequest << std::endl;
 	return getRequest;
 }
