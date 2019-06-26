@@ -60,6 +60,7 @@
             void MakeSpiderGraph();
             std::string CleanURL(std::string url,bool nopaths = false);
             bool isUrl(std::string url);
+            std::string AddHTTPToUrl(std::string url);
             std::string GetRequest(std::string link);
         private:
             int port;
