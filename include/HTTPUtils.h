@@ -52,7 +52,8 @@
             void SendMessage(std::string message);
 
             std::string MakeRequest(std::string address,std::string request);
-            void spider(Site* currentsite,int depthcounter);
+            void Spider(Site* currentsite,int depthcounter);
+            void Dump(Site* currentsite,int depthcounter);
             void saveFile(std::string filename,std::string content);
             HTTPRequest ParseResponse(std::string response,bool printHeader = false,bool printBody = false);
 

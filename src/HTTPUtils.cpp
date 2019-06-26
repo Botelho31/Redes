@@ -73,8 +73,8 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
 }
 
-void HTTPUtils::spider(HTTPUtils::Site* site,int depthcounter){
-	if(depthcounter >= 2){
+void HTTPUtils::Spider(HTTPUtils::Site* site,int depthcounter){
+	if(depthcounter >= 3){
 		// std::cout << "Return from depth" << std::endl;
 		return;
 	}
@@ -113,19 +113,58 @@ void HTTPUtils::spider(HTTPUtils::Site* site,int depthcounter){
 							newhref << CleanURL(sitename,true) << checkline;
 							checkline = newhref.str();
 						}
-						if((checkline == sitename) || (checkline == (sitename + "/"))){
+						if((checkline == sitename) || (checkline == sitename)){
 							alreadyvisited = true;
 						}
+						if(checkline.c_str()[0] != 'h'){
+								std::stringstream refwithhttp1;
+								refwithhttp1 << "http://" << checkline;
+								if(sitename == refwithhttp1.str()){
+									alreadyvisited = true;
+								} 
+							}
 						for(int i  = 0;i < sites.size();i++){
 							if(sites[i]->url == checkline){
 								alreadyvisited = true;
 							}
+							if(checkline.c_str()[0] != 'h'){
+								std::stringstream refwithhttp;
+								refwithhttp << "http://" << checkline;
+								if(sites[i]->url == refwithhttp.str()){
+									alreadyvisited = true;
+								} 
+							}
+							for(int j = 0;j < sites[i]->conexoes.size();j++){
+								if(sites[i]->conexoes[j]->url == checkline){
+								alreadyvisited = true;
+								}
+								if(checkline.c_str()[0] != 'h'){
+									std::stringstream refwithhttp;
+									refwithhttp << "http://" << checkline;
+									if(sites[i]->conexoes[j]->url == refwithhttp.str()){
+										alreadyvisited = true;
+									} 
+								}
+							}
 						}
 						if(!alreadyvisited){
-							if(isUrl(checkline)){
-								Site *newsite = new Site(checkline);
+							if((checkline.c_str()[0] != '#') && (checkline.c_str()[0] != '.')){
+								Site *newsite;
+								if(checkline.c_str()[checkline.size() - 1] != '/'){
+									newsite = new Site(checkline + "/");
+								}else{
+									newsite = new Site(checkline);
+								}
 								site->conexoes.push_back(newsite);
-								spider(newsite,depthcounter);
+								if(newsite->url.c_str()[0] == 'h'){
+									if(newsite->url.c_str()[3] != 's'){
+										Spider(newsite,depthcounter);
+									}else{
+										std::cout << "discarding https site" << std::endl;
+									}
+								}else{
+									Spider(newsite,depthcounter);
+								}
 							}
 						}
 						foundhref = true;
@@ -141,6 +180,114 @@ void HTTPUtils::spider(HTTPUtils::Site* site,int depthcounter){
 		}
 	}
 	sites.push_back(site);
+}
+
+void HTTPUtils::Dump(HTTPUtils::Site* site,int depthcounter){
+	std::string sitename = site->url;
+	depthcounter ++;
+	std::cout << "Depth: " << depthcounter << std::endl;
+	std::string response = MakeRequest(CleanURL(sitename),GetRequest(sitename));
+	HTTPRequest request = ParseResponse(response);
+	std::stringstream html;
+	std::string checkline;
+	html << request.html;
+
+	std::stringstream newhtml;
+
+	while(!html.eof()){
+		getline(html,checkline,'<');
+		newhtml << checkline;
+		getline(html,checkline,'>');
+		std::stringstream tag;
+		tag << checkline;
+		if(checkline.c_str()[0] == '/'){
+			continue;
+		}else{
+			tag >> checkline;
+			if(checkline == "a"){
+				bool foundhref = false;
+				while(!foundhref){
+					tag >> checkline;
+					std::stringstream href;
+					href << checkline;
+					getline(href,checkline,'=');
+					if(checkline == "href"){
+						getline(href,checkline,'"');
+						getline(href,checkline,'"');
+						bool alreadyvisited = false;
+						if(checkline.c_str()[0] == '/'){
+							std::stringstream newhref;
+							newhref << CleanURL(sitename,true) << checkline;
+							checkline = newhref.str();
+						}
+						if((checkline == sitename) || (checkline == sitename)){
+							alreadyvisited = true;
+						}
+						if(checkline.c_str()[0] != 'h'){
+								std::stringstream refwithhttp1;
+								refwithhttp1 << "http://" << checkline;
+								if(sitename == refwithhttp1.str()){
+									alreadyvisited = true;
+								} 
+							}
+						for(int i  = 0;i < sites.size();i++){
+							if(sites[i]->url == checkline){
+								alreadyvisited = true;
+							}
+							if(checkline.c_str()[0] != 'h'){
+								std::stringstream refwithhttp;
+								refwithhttp << "http://" << checkline;
+								if(sites[i]->url == refwithhttp.str()){
+									alreadyvisited = true;
+								} 
+							}
+							for(int j = 0;j < sites[i]->conexoes.size();j++){
+								if(sites[i]->conexoes[j]->url == checkline){
+								alreadyvisited = true;
+								}
+								if(checkline.c_str()[0] != 'h'){
+									std::stringstream refwithhttp;
+									refwithhttp << "http://" << checkline;
+									if(sites[i]->conexoes[j]->url == refwithhttp.str()){
+										alreadyvisited = true;
+									} 
+								}
+							}
+						}
+						if(!alreadyvisited){
+							if((checkline.c_str()[0] != '#') && (checkline.c_str()[0] != '.')){
+								if((CleanURL(checkline)) == CleanURL(sitename)){
+									std::cout << checkline << std::endl;
+									Site *newsite;
+									if(checkline.c_str()[checkline.size() - 1] != '/'){
+										newsite = new Site(checkline + "/");
+									}else{
+										newsite = new Site(checkline);
+									}
+									site->conexoes.push_back(newsite);
+									Spider(newsite,depthcounter);
+								}
+							}
+						}
+						foundhref = true;
+					}
+					if(href.eof()){
+						foundhref = true;
+					}
+					if(tag.eof()){
+						foundhref = true;
+					}
+				}
+
+			}else{
+				tag.clear();
+				newhtml << '<' << tag.str() << '>';
+			}
+		}
+	}
+	sites.push_back(site);
+
+	std::cout << newhtml.str() << std::endl;
 }
 
 void HTTPUtils::saveFile(std::string filename,std::string content){
@@ -225,8 +372,8 @@ std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 	getline(endereco,url,'/');
 	if((url == "http:") || (url == "https:")){
 		getline(endereco,url,'/');
+		endereco >> url;
 	}
-	endereco >> url;
 	std::stringstream newendereco;
 	newendereco << url;
 	getline(newendereco,url,'/');
@@ -240,6 +387,7 @@ std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 }
 
 void HTTPUtils::MakeSpiderGraph(){
+	std::cout << "Generating Spider Graph" << std::endl;
     std::ofstream myfile;
     myfile.open ("spider.dot");
     myfile << "digraph {\n";
@@ -255,7 +403,11 @@ void HTTPUtils::MakeSpiderGraph(){
 	// myfile << "\t" << "size=\"1000,1000\";" << std::endl;
 
 	for(int i = 0;i < sites.size();i++){
+		if(i == 0){
+			myfile << "\t" << sites[i]->id << " [label=\"" << sites[i]->BreakUrl() << "\"; shape=record; color=red; height=.1; fontsize=9];" << std::endl;
+		}else{
 			myfile << "\t" << sites[i]->id << " [label=\"" << sites[i]->BreakUrl() << "\"; shape=record; height=.1; fontsize=9];" << std::endl;
+		}
         for(int j = 0;j < sites[i]->conexoes.size();j ++){
 			myfile << "\t" << sites[i]->conexoes[j]->id << " [label=\"" << sites[i]->conexoes[j]->BreakUrl() << "\"; shape=record; height=.1; fontsize=9];" << std::endl;
         }
