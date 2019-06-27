@@ -1,7 +1,6 @@
 .vscode/*
 bin/*
 dep/*
-dump/*
 TRABREDES
-graph/*
-Receiving-Sending/*
+*.html
+*.txt
