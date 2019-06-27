@@ -2,12 +2,12 @@
 #include "../include/Server.h"
 
 void WaitForInput(Server *server){
-	std::string input;
-	while(input != "quit"){
-		std::cin >> input;
-	}
-	std::cout << "Closing Server on next connection" << std::endl;
-	server->Close();
+	// std::string input;
+	// while(input != "quit"){
+	// 	// std::cin >> input;
+	// }
+	// std::cout << "Closing Server on next connection" << std::endl;
+	// server->Close();
 }
 
 void spider(std::string sitename){

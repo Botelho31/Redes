@@ -101,7 +101,7 @@ void* Server::HandleRequest(void *arg){
 		}else{
 			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << std::endl << std::endl << response << std::endl;
 			std::string edited = WaitForEdit(response,"Receiving-Sending/Receiving-Response.txt");
-			send(new_socket, response.c_str(), strlen(response.c_str()), 0);
+			send(new_socket, edited.c_str(), strlen(edited.c_str()), 0);
 			std::cout << "Send Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}
 	}
@@ -117,9 +117,10 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
     savefile << content;
     savefile.close();
 
-	std::cout << "Please Edit file: " << filename << " and then type anything on terminal"<< std::endl;
+	std::cout << "Please Edit file: " << filename << " and then type anything on terminal "<< std::endl<< std::endl;
 	std::string input;
 	std::cin >> input;
+	std::cout << "File edited" << std::endl;
 
 	std::fstream editedfile;
     editedfile.open(filename);
@@ -132,7 +133,6 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
 		}
 	}
     editedfile.close();
-	std::cout << "File edited" << std::endl;
 	return editedcontent.str();
 }
 
