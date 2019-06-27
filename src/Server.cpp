@@ -110,7 +110,6 @@ void* Server::HandleRequest(void *arg){
 		
 }
 
-
 std::string Server::WaitForEdit(std::string content,std::string filename){
 	std::ofstream savefile;
     savefile.open (filename);
