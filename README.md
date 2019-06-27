@@ -8,5 +8,5 @@ Turma: A
 
 Para compilar apenas use: make
 
-Para exercutar use: ./TRABREDES
+Para exercutar use: ./TRABREDES e siga o menu
     

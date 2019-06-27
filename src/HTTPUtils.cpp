@@ -8,17 +8,18 @@ HTTPUtils::HTTPUtils(int port,std::string ip){
 	this->sock = 0;
 }
 
+//Faz uma request pro site especificado
 std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 	struct addrinfo hints , *results;
 	int rv;
 	int sockfd;
 	char inputVal[address.size() + 1];
 	strcpy(inputVal, address.c_str());
-	// char buffer[64000];
 	memset(&hints,0,sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
+	//Resolve o DNS do nome do site
 	if( (rv = getaddrinfo(inputVal,"80",&hints,&results)) != 0){
 		fprintf(stderr,"getaddrinfo error: %s\n",gai_strerror(rv));
 		char *responseempty = "";
@@ -27,14 +28,17 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
     sockfd = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
 
+	//Seta um timeout pra socket recem criada
 	struct timeval tv;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
+	//Se conecta e manda pro servidor
     connect(sockfd, results->ai_addr, results->ai_addrlen);
     send(sockfd, request.c_str(), strlen(request.c_str()), 0);
 	
+	//Recebe a resposta byte a byte
 	std::ostringstream bufferStream;
 	char buffer;
 	while(recv(sockfd, &buffer, 1, 0) > 0){
@@ -47,6 +51,7 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 
 }
 
+//Realiza o algoritmo Spider requisitado no trabalho
 void HTTPUtils::Spider(HTTPUtils::Site* site,int depthcounter){
 	sites.push_back(site);
 	if(depthcounter >= 3){
@@ -120,6 +125,7 @@ void HTTPUtils::Spider(HTTPUtils::Site* site,int depthcounter){
 	}
 }
 
+//Realiza o algoritmo dump requisitado no trabalho
 void HTTPUtils::Dump(HTTPUtils::Site* site,int depthcounter){
 
 	sites.push_back(site);
@@ -223,6 +229,7 @@ void HTTPUtils::Dump(HTTPUtils::Site* site,int depthcounter){
 	saveFile(filesave.str(),newhtml.str());
 }
 
+//Salva o conteudo no arquivo especificado
 void HTTPUtils::saveFile(std::string filename,std::string content){
 	std::ofstream savefile;
     savefile.open (filename);
@@ -230,6 +237,7 @@ void HTTPUtils::saveFile(std::string filename,std::string content){
     savefile.close();
 }
 
+//Realiza o parse nos parametros HTTP
 HTTPRequest HTTPUtils::ParseResponse(std::string response,bool printHeader,bool printBody){
 	std::map<std::string,std::vector<std::string>> httpParams;
 	std::stringstream streamresponse;
@@ -299,6 +307,7 @@ HTTPRequest HTTPUtils::ParseResponse(std::string response,bool printHeader,bool 
 	return request;
 }
 
+//Limpa o url deixando somente o www.site.com por exemplo
 std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 	std::stringstream endereco;
 	endereco << url;
@@ -319,6 +328,7 @@ std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 	return url;
 }
 
+//Gera um grafo usando a biblioteca graphviz e a extensão dot
 void HTTPUtils::MakeGraph(std::string graphname){
 	std::cout << "Generating Spider Graph" << std::endl;
     std::ofstream myfile;
@@ -353,6 +363,7 @@ void HTTPUtils::MakeGraph(std::string graphname){
     system(command.str().c_str());
 }
 
+//Checa se é um URL
 bool HTTPUtils::isUrl(std::string url){
 	url = CleanURL(url);
 	std::stringstream urlStream;
@@ -373,6 +384,8 @@ bool HTTPUtils::isUrl(std::string url){
 	return false;
 }
 
+
+//Addiciona o http:// ao começo de um site
 std::string HTTPUtils::AddHTTPToUrl(std::string sitename){
 	if(sitename.c_str()[0] != 'h'){
 		std::stringstream refwithhttp;
@@ -382,6 +395,7 @@ std::string HTTPUtils::AddHTTPToUrl(std::string sitename){
 	return sitename;						
 }
 
+//Retorna um HTTP GET padrão
 std::string HTTPUtils::GetRequest(std::string sitename){
 	if(sitename.c_str()[sitename.size() - 1] == '/'){
 		sitename.pop_back();

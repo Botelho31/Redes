@@ -1,4 +1,6 @@
 #include "../include/HTTPRequest.h"
+
+//Recebe um dicionario de parametros do HTTP e pega os dados dele de forma segura para a leitura
 HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpParams){
     method = "";
     connection = "";
@@ -29,19 +31,26 @@ HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpPara
     }
 }
 
+//Refaz a request com alguns itens diferentes para facilitar a interpretação da response
 std::string HTTPRequest::GetCleanedRequest(){
     std::stringstream cleanedrequest;
 
     for(int i = 0;i < params["ResponseHeader"].size();i++){
-        cleanedrequest << params["ResponseHeader"][i] << " ";
+        cleanedrequest << params["ResponseHeader"][i];
+        if(i != (params["ResponseHeader"].size() - 1)){
+            cleanedrequest << " ";
+        }
     }
     cleanedrequest << "\r\n";
     for(auto it = params.cbegin(); it != params.cend(); ++it){
 
-        if((it->first != "ResponseHeader") && (it->first != "Accept-Encoding") && (it->first != "Connection") && (it->first != "HTML")){
+        if((it->first != "ResponseHeader") && (it->first != "Connection") && (it->first != "Accept-Encoding") && (it->first != "HTML") && (it->first.size() > 2)){
             cleanedrequest << it->first << ": ";
             for(int i = 0;i < it->second.size();i++){
-                cleanedrequest << it->second[i] << " ";
+                cleanedrequest << it->second[i];
+                if(i !=  (it->second.size() - 1)){
+                    cleanedrequest << " ";
+                }
             }
             cleanedrequest << "\r\n";
         }

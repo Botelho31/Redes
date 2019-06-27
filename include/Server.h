@@ -9,7 +9,6 @@
 
             void* HandleRequest(void *args);
             std::string WaitForEdit(std::string content,std::string filename);
-
             void Close();
         private:
             int server_fd, new_socket, new_socket2, valread,port;

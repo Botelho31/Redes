@@ -1,6 +1,7 @@
 #include "../include/Server.h"
 
 
+//Cria e da Bind na porta do servidor
 Server::Server(int port){
 	this->port = port;
 	this->opt = 1;
@@ -39,6 +40,7 @@ Server::~Server(){
 	close(server_fd);
 }
 
+//Escuta as tentativas de connect na socket do servidor e as manda pra HandleRequest onde sao tratadas
 void Server::ListenFor(){
 
 	if (listen(server_fd, 3) < 0)
@@ -66,64 +68,73 @@ void Server::ListenFor(){
 	}	
 }
 
+//Cuida das requests recebidas pelo servidos
 void* Server::HandleRequest(void *arg){
 
 	int new_socket = *((int *)arg);
 
+	//Seta um timeout para a socket
 	struct timeval tv;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
+	//Pega a informacao byte a byte da socket
 	std::ostringstream bufferStream;
 	char buffer;
 	while(recv(new_socket, &buffer, 1, 0) > 0){
 		bufferStream << buffer;
 	}
 
+	//Envia a request para WaitForEdit onde sera editada pelo usuario
 	std::cout << "Received Request" << std::endl << std::endl;
 	std::string request = bufferStream.str();
 	std::cout << request << std::endl;
-	std::string edited = WaitForEdit(request,"Receiving-Sending/Receiving-Request.txt");
-	std::cout << edited << std::endl;
+	std::string edited1 = WaitForEdit(request,"Receiving-Sending/Receiving-Request.txt");
+	std::cout << edited1 << std::endl;
 
+	//Da o parse na request
 	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
-	HTTPRequest HTTPresponse = http->ParseResponse(edited);
+	HTTPRequest HTTPresponse = http->ParseResponse(edited1);
 	if(HTTPresponse.method == ""){
-		std::cout << "discarding Empty Request" << std::endl;
-		
+		//Caso a request seja vazia ele descarta dela
+		std::cout << "Discarding Empty Request" << std::endl;
 	}else if(HTTPresponse.method == "CONNECT"){
+		//Descarta de requests do tipo HTTPS
 		std::cout << "Discarding HTTPS Request" << std::endl;
 	}else{		
-		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << std::endl;
-		std::cout << HTTPresponse.accept << std::endl;
-		if(HTTPresponse.accept == "image"){
 
-		}else{
-			
-		}
+		//Realiza a request
+		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << std::endl;
 		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),HTTPresponse.GetCleanedRequest());
 
 		if(response == ""){
+			//Caso a resposta venha vazia volta pro listen do servidor e espera outra conexão
 			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}else{
+			//Recebe a request e espera a edição do usuario
 			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << std::endl << std::endl << response << std::endl;
-			std::string edited = WaitForEdit(response,"Receiving-Sending/Receiving-Response.txt");
-			send(new_socket, edited.c_str(), strlen(edited.c_str()), 0);
+			std::string edited2 = WaitForEdit(response,"Receiving-Sending/Receiving-Response.txt");
+			//Manda de volta para o cliente;
+			send(new_socket, edited2.c_str(), strlen(edited2.c_str()), 0);
 			std::cout << "Send Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}
 	}
 
+	//Fecha a conexao do cliente
 	close(new_socket);
 		
 }
 
+//Espera a aprovação do usuario do arquivo especificado pra voltar pro programa
 std::string Server::WaitForEdit(std::string content,std::string filename){
+	//Salva oque esta a ser editado na file especificada
 	std::ofstream savefile;
     savefile.open (filename);
     savefile << content;
     savefile.close();
 
+	//Espera o OK do usuario
 	std::cout << "Please Edit file: " << filename << " and then type anything on terminal and press ENTER."<< std::endl<< std::endl;
 	std::string input;
 	std::cin >> input;
@@ -134,6 +145,7 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
 	}
 	std::cout << "File edited" << std::endl;
 
+	//Pega o conteudo editado/ou não da file
 	std::fstream editedfile;
     editedfile.open(filename);
 	std::stringstream editedcontent;
@@ -148,6 +160,7 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
 	return editedcontent.str();
 }
 
+//Fecha o servidor na proxima request
 void Server::Close(){
 	keeprunning = false;
 }
