@@ -40,7 +40,7 @@ int main(int argc, char const* argv[]){
 	std::cout << "Digite 3 para rodar o algoritmo de Proxy Server." << std::endl;
 	std::cout << "Digite 4 para encerrar o programa." << std::endl;
 	std::string flag;
-
+	int port;
 	while (true){
 		std::cin >> flag;
 		if (flag == "1"){
@@ -58,7 +58,9 @@ int main(int argc, char const* argv[]){
 			else{
 				if (flag == "3"){
 					std::cout << "Opcao de Proxy Server selecionado" << std::endl;
-					proxyserver(8228);
+					std::cout << "Escolha uma porta: ";
+					std::cin >> port;
+					proxyserver(port);
 				}
 				else{
 					if (flag == "4"){
