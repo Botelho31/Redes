@@ -46,12 +46,14 @@ int main(int argc, char const* argv[]){
 		if (flag == "1"){
 			std::cout << "Opcao de Spider selecionado" << std::endl;
 			spider("http://www.ba.gov.br/");
-			std::cout << "Output file : " << std::endl;
+			std::cout << "On graph directory --- Output file : spidergraph.svg (open on Browser)" << std::endl;
 		}
 		else{
 			if (flag == "2"){
 				std::cout << "Opcao de Dump selecionado" << std::endl;
 				dump("http://www.ba.gov.br/");
+
+			std::cout << "On dump directory --- Output file : (nameofwebsite)" << std::endl;
 			}
 			else{
 				if (flag == "3"){
