@@ -31,15 +31,51 @@ void proxyserver(int port){
 	t1.join();
 }
 
+
+
 int main(int argc, char const* argv[]){
-	// spider("http://www.ba.gov.br/");
 
-	// dump("http://www.ba.gov.br/");
+	std::cout << "Digite 1 para rodar o algoritmo spider." << std::endl;
+	std::cout << "Digite 2 para rodar o algoritmo de Dump." << std::endl;
+	std::cout << "Digite 3 para rodar o algoritmo de Proxy Server." << std::endl;
+	std::cout << "Digite 4 para encerrar o programa." << std::endl;
+	int flag;
 
-	proxyserver(8228);
-
-	// Server server(8228);
-	// std::cout << server.WaitForEdit("content","Receiving-Sending/test.txt") << std::endl;
-
-	return 0;
+	while (true){
+		scanf("%d", &flag);
+		if (flag == 1){
+			std::cout << "Opcao de Spider selecionado" << std::endl;
+			spider("http://www.ba.gov.br/");
+			std::cout << "Output file : " << std::endl;
+		}
+		else{
+			if (flag == 2){
+				std::cout << "Opcao de Dump selecionado" << std::endl;
+				dump("http://www.ba.gov.br/");
+			}
+			else{
+				if (flag == 3){
+					std::cout << "Opcao de Proxy Server selecionado" << std::endl;
+					proxyserver(8228);
+				}
+				else{
+					if (flag == 4){
+						std::cout << "--QUIT--" << std::endl;
+						return 0;
+					}
+					else{
+						std::cout << "Digite um numero de 1 a 4" << std::endl;
+						std::cout << "Digite 1 para rodar o algoritmo spider." << std::endl;
+						std::cout << "Digite 2 para rodar o algoritmo de Dump." << std::endl;
+						std::cout << "Digite 3 para rodar o algoritmo de Proxy Server." << std::endl;
+						std::cout << "Digite 4 para encerrar o programa." << std::endl;
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+	}
 }
