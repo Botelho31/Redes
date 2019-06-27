@@ -10,6 +10,7 @@
             std::string host;
             std::string method;
             std::string connection;
+            std::string accept;
             std::string html;
             std::map<std::string,std::vector<std::string>> params;
     };

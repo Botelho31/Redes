@@ -4,6 +4,7 @@ HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpPara
     connection = "";
     host = "";
     html = "";
+    accept = "";
     this->params = httpParams;
     for(auto it = httpParams.cbegin(); it != httpParams.cend(); ++it){
         for(int i = 0;i < it->second.size();i++){
@@ -18,6 +19,11 @@ HTTPRequest::HTTPRequest(std::map<std::string,std::vector<std::string>> httpPara
             }
             if((it->first == "HTML") && (i == 0)){
                 this->html = it->second[i];
+            }
+            if(it->first == "Accept" && (i == 0)){
+                std::stringstream acceptstream;
+                acceptstream << it->second[i];
+                getline(acceptstream,this->accept,'/');
             }
         }
     }

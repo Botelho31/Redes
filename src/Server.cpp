@@ -59,6 +59,9 @@ void Server::ListenFor(){
 			printf("Server accepted connection, reading message\n");
 			
 			HandleRequest(&new_socket);
+		}else{
+			std::cout << "Shutting down server" << std::endl;
+			std::cout << std::endl;
 		}
 	}	
 }
@@ -85,15 +88,20 @@ void* Server::HandleRequest(void *arg){
 	std::cout << edited << std::endl;
 
 	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
-	HTTPRequest HTTPresponse = http->ParseResponse(request);
+	HTTPRequest HTTPresponse = http->ParseResponse(edited);
 	if(HTTPresponse.method == ""){
 		std::cout << "discarding Empty Request" << std::endl;
 		
 	}else if(HTTPresponse.method == "CONNECT"){
 		std::cout << "Discarding HTTPS Request" << std::endl;
-	}else{
-
+	}else{		
 		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << std::endl;
+		std::cout << HTTPresponse.accept << std::endl;
+		if(HTTPresponse.accept == "image"){
+
+		}else{
+			
+		}
 		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),HTTPresponse.GetCleanedRequest());
 
 		if(response == ""){
@@ -119,6 +127,11 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
 	std::cout << "Please Edit file: " << filename << " and then type anything on terminal and press ENTER."<< std::endl<< std::endl;
 	std::string input;
 	std::cin >> input;
+	if(input == "quit"){
+		std::cout << "Shutting Down Server On Next Request" << std::endl;
+		std::cout << std::endl;
+		keeprunning = false;
+	}
 	std::cout << "File edited" << std::endl;
 
 	std::fstream editedfile;
