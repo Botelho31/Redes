@@ -45,10 +45,10 @@ void Server::ListenFor(){
 		exit(EXIT_FAILURE);
 	}
 
-	// pthread_t threads[60];
     int i = 0;
 
-	while(1){
+	bool keeprunning = true;
+	while(keeprunning){
 
 		if ((new_socket = accept(server_fd, (struct sockaddr*) & address,
 			(socklen_t*)& addrlen)) < 0) //Blocked until connect is called in the client
@@ -60,18 +60,11 @@ void Server::ListenFor(){
 		printf("Server accepted connection, reading message\n");
 		
 		HandleRequest(&new_socket);
-		// if( pthread_create(&threads[i], NULL, HandleRequest, &new_socket) != 0 ){
-        //    printf("Failed to create thread\n");
-		// }
-        // if( i >= 50)
-        // {
-        //   i = 0;
-        //   while(i < 50)
-        //   {
-        //     pthread_join(threads[i++],NULL);
-        //   }
-        //   i = 0;
-		// }
+		std::string input;
+		std::cin >> input;
+		if(input  ==  "QUIT"){
+			keeprunning = false;
+		}
 	}	
 }
 
@@ -97,34 +90,23 @@ void* Server::HandleRequest(void *arg){
 	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
 	HTTPRequest HTTPresponse = http->ParseResponse(request);
 	if(HTTPresponse.method == ""){
-		if (recv(new_socket, &buffer, 1, MSG_PEEK | MSG_DONTWAIT) == 0) {
-			std::cout << "Closing Connection" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
-			close(new_socket);
-			// pthread_exit(NULL);
-			return &buffer;
-		}else{
-			// close(new_socket);
-			// return &buffer;
-			HandleRequest(&new_socket);
-		}
+		std::cout << "Empty Request" << std::endl;
+		close(new_socket);
+		return &buffer;
 	}else if(HTTPresponse.method == "CONNECT"){
-		std::cout << "Discarding HTTPS Request" << " -  Thread ID: " << std::this_thread::get_id() << std::endl;
+		std::cout << "Discarding HTTPS Request" << std::endl;
 	}else{
-		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << std::endl;
 		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),HTTPresponse.GetCleanedRequest());
 		if(response == ""){
-			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}else{
-			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << " - Thread ID: " << std::this_thread::get_id() << std::endl << response << std::endl;
+			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << std::endl << response << std::endl;
 			send(new_socket, response.c_str(), strlen(response.c_str()), 0);
-			// if(HTTPresponse.connection == "keep-alive"){
-			// 	HandleRequest(&new_socket);
-			// }
 		}
 	}
 
 	close(new_socket);
-	// pthread_exit(NULL);
 		
 }
 
