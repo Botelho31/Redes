@@ -117,7 +117,7 @@ std::string Server::WaitForEdit(std::string content,std::string filename){
     savefile << content;
     savefile.close();
 
-	std::cout << "Please Edit file: " << filename << " and then type anything on terminal "<< std::endl<< std::endl;
+	std::cout << "Please Edit file: " << filename << " and then type anything on terminal and press ENTER."<< std::endl<< std::endl;
 	std::string input;
 	std::cin >> input;
 	std::cout << "File edited" << std::endl;
