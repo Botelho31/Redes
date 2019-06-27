@@ -3,6 +3,5 @@ bin/*
 dep/*
 TRABREDES
 *.html
-*.txt
 *.svg
 *.dot
