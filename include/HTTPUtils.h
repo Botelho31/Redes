@@ -49,7 +49,6 @@
             };
 
             HTTPUtils(int port,std::string ip);
-            void SendMessage(std::string message);
 
             std::string MakeRequest(std::string address,std::string request);
             void Spider(Site* currentsite,int depthcounter);
