@@ -57,7 +57,7 @@
             void saveFile(std::string filename,std::string content);
             HTTPRequest ParseResponse(std::string response,bool printHeader = false,bool printBody = false);
 
-            void MakeSpiderGraph();
+            void MakeGraph(std::string graphname);
             std::string CleanURL(std::string url,bool nopaths = false);
             bool isUrl(std::string url);
             std::string AddHTTPToUrl(std::string url);

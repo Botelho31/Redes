@@ -5,28 +5,27 @@ void spider(std::string sitename){
 	HTTPUtils *http = new HTTPUtils(8228,"127.0.0.1");
 	HTTPUtils::Site *site = new HTTPUtils::Site(sitename);
 	http->Spider(site,0);
-	http->MakeSpiderGraph();
+	http->MakeGraph("spidergraph");
 }
 
 void dump(std::string sitename){
 	HTTPUtils *http = new HTTPUtils(8228,"127.0.0.1");
 	HTTPUtils::Site *site = new HTTPUtils::Site(sitename);
 	http->Dump(site,0);
-	http->MakeSpiderGraph();
+	http->MakeGraph("dumpgraph");
+}
+
+void proxyserver(int port){
+	Server server(port);
+	server.ListenFor();
 }
 
 int main(int argc, char const* argv[]){
-	HTTPUtils *http = new HTTPUtils(8228,"127.0.0.1");
-	// char* response = http->MakeRequest("www.google.com",http->getRequest);
-	spider("http://www.ba.gov.br/");
+	// spider("http://www.ba.gov.br/");
 
 	// dump("http://www.ba.gov.br/");
 
-	// std::cout << http->MakeRequest("www.ba.gov.br",http->GetRequest("http://www.ba.gov.br/node/232/")) << std::endl;
-
-	// http->CleanURL("www.ba.gov.br/node/")
-	// Server server(8228);
-	// server.ListenFor();
+	proxyserver(8228);
 
 	return 0;
 }

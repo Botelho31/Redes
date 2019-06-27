@@ -345,10 +345,12 @@ std::string HTTPUtils::CleanURL(std::string url,bool withhttp){
 	return url;
 }
 
-void HTTPUtils::MakeSpiderGraph(){
+void HTTPUtils::MakeGraph(std::string graphname){
 	std::cout << "Generating Spider Graph" << std::endl;
     std::ofstream myfile;
-    myfile.open ("graph/spider.dot");
+	std::stringstream filename;
+	filename << "graph/" << graphname << ".dot";
+    myfile.open (filename.str().c_str());
     myfile << "digraph {\n";
 
 	myfile << "\t" << "compound=true;" << std::endl;
@@ -371,7 +373,10 @@ void HTTPUtils::MakeSpiderGraph(){
     }
     myfile << "}\n";
     myfile.close();
-    system("dot -Tsvg graph/spider.dot -o graph/spider.svg");
+
+	std::stringstream command;
+	command << "dot -Tsvg graph/" << graphname << ".dot" << " -o graph/" << graphname << ".svg";
+    system(command.str().c_str());
 }
 
 bool HTTPUtils::isUrl(std::string url){
