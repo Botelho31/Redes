@@ -6,6 +6,8 @@ Server::Server(int port){
 	this->opt = 1;
 	this->addrlen = sizeof(address);
 
+	keeprunning = true;
+
 	// Creating socket file descriptor 
 	if ((this->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
@@ -45,9 +47,6 @@ void Server::ListenFor(){
 		exit(EXIT_FAILURE);
 	}
 
-    int i = 0;
-
-	bool keeprunning = true;
 	while(keeprunning){
 
 		if ((new_socket = accept(server_fd, (struct sockaddr*) & address,
@@ -56,14 +55,10 @@ void Server::ListenFor(){
 			perror("accept");
 			exit(EXIT_FAILURE);
 		}
-
-		printf("Server accepted connection, reading message\n");
-		
-		HandleRequest(&new_socket);
-		std::string input;
-		std::cin >> input;
-		if(input  ==  "QUIT"){
-			keeprunning = false;
+		if(keeprunning){
+			printf("Server accepted connection, reading message\n");
+			
+			HandleRequest(&new_socket);
 		}
 	}	
 }
@@ -71,38 +66,43 @@ void Server::ListenFor(){
 void* Server::HandleRequest(void *arg){
 
 	int new_socket = *((int *)arg);
-	std::ostringstream bufferStream;
-	char buffer;
 
 	struct timeval tv;
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	setsockopt(new_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
+	std::ostringstream bufferStream;
+	char buffer;
 	while(recv(new_socket, &buffer, 1, 0) > 0){
 		bufferStream << buffer;
 	}
 
-	std::cout << "Received Request" << " - Thread ID: " << std::this_thread::get_id() << std::endl;
+	std::cout << "Received Request" << std::endl << std::endl;
 	std::string request = bufferStream.str();
 	std::cout << request << std::endl;
+	std::string edited = WaitForEdit(request,"Receiving-Sending/Receiving-Request.txt");
+	std::cout << edited << std::endl;
 
 	HTTPUtils* http = new HTTPUtils(8080,"127.0.0.1");
 	HTTPRequest HTTPresponse = http->ParseResponse(request);
 	if(HTTPresponse.method == ""){
-		std::cout << "Empty Request" << std::endl;
-		close(new_socket);
-		return &buffer;
+		std::cout << "discarding Empty Request" << std::endl;
+		
 	}else if(HTTPresponse.method == "CONNECT"){
 		std::cout << "Discarding HTTPS Request" << std::endl;
 	}else{
+
 		std::cout << "Made Request" << " - Host: " << http->CleanURL(HTTPresponse.host) << std::endl;
 		std::string response = http->MakeRequest(http->CleanURL(HTTPresponse.host),HTTPresponse.GetCleanedRequest());
+
 		if(response == ""){
 			std::cout << "Got No Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}else{
-			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << std::endl << response << std::endl;
+			std::cout << "Got Response" << " - Host: " << HTTPresponse.host << std::endl << std::endl << response << std::endl;
+			std::string edited = WaitForEdit(response,"Receiving-Sending/Receiving-Response.txt");
 			send(new_socket, response.c_str(), strlen(response.c_str()), 0);
+			std::cout << "Send Response" << " - Host: " << HTTPresponse.host << std::endl;
 		}
 	}
 
@@ -110,3 +110,32 @@ void* Server::HandleRequest(void *arg){
 		
 }
 
+
+std::string Server::WaitForEdit(std::string content,std::string filename){
+	std::ofstream savefile;
+    savefile.open (filename);
+    savefile << content;
+    savefile.close();
+
+	std::cout << "Please Edit file: " << filename << " and then type anything on terminal"<< std::endl;
+	std::string input;
+	std::cin >> input;
+
+	std::fstream editedfile;
+    editedfile.open(filename);
+	std::stringstream editedcontent;
+	std::string checkline;
+	if(editedfile.is_open()){
+		while(!editedfile.eof()){
+			getline(editedfile,checkline,'\n');
+			editedcontent << checkline << "\r\n";
+		}
+	}
+    editedfile.close();
+	std::cout << "File edited" << std::endl;
+	return editedcontent.str();
+}
+
+void Server::Close(){
+	keeprunning = false;
+}
