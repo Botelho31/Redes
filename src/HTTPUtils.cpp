@@ -46,6 +46,7 @@ std::string HTTPUtils::MakeRequest(std::string address,std::string request){
 	}
 	freeaddrinfo(results);
 	close(sockfd);
+	std::cout << "test" << std::endl;
 
 	return bufferStream.str();
 

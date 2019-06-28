@@ -1,6 +1,12 @@
-CONNECT push.services.mozilla.com:443 HTTP/1.1
+GET http://flaviomoura.mat.br/files/site.css HTTP/1.1
+Host: flaviomoura.mat.br
 User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0
-Proxy-Connection: keep-alive
+Accept: text/css,*/*;q=0.1
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://flaviomoura.mat.br/
+DNT: 1
 Connection: keep-alive
-Host: push.services.mozilla.com:443
+Pragma: no-cache
+Cache-Control: no-cache
 

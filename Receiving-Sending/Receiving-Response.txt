@@ -1,55 +1,70 @@
-HTTP/1.1 403 Forbidden
-X-Frame-Options: SAMEORIGIN
-X-XSS-Protection: 1; mode=block
-X-Content-Type-Options: nosniff
-Content-Security-Policy: frame-ancestors
-Content-Type: text/html; charset="utf-8"
-Content-Length: 2623
-Connection: Close
+HTTP/1.1 200 OK
+Content-Type: text/css; charset=utf-8
+Server: GitHub.com
+Last-Modified: Wed, 26 Jun 2019 19:02:14 GMT
+ETag: "5d13c136-567"
+Access-Control-Allow-Origin: *
+Expires: Thu, 27 Jun 2019 23:59:18 GMT
+Cache-Control: max-age=600
+X-Proxy-Cache: MISS
+X-GitHub-Request-Id: FF26:76FE:185629:1EA1F3:5D1555FE
+Content-Length: 1383
+Accept-Ranges: bytes
+Date: Fri, 28 Jun 2019 00:27:55 GMT
+Via: 1.1 varnish
+Age: 102
+Connection: close
+X-Served-By: cache-gru17132-GRU
+X-Cache: HIT
+X-Cache-Hits: 1
+X-Timer: S1561681676.668587,VS0,VE1
+Vary: Accept-Encoding
+X-Fastly-Request-ID: dba6eb439c21f1a9ba373fd5d9db3622982e96df
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Application Control Violation</title>
-    <style type="text/css">
-        html, body { margin: 0; padding: 0; font-family: Verdana, Arial, sans-serif; font-size: 10pt; }
-        h1, h2 { height: 82px; text-indent: -999em; margin: 0; padding: 0; margin: 0; }
-        div { margin: 0; padding: 0; }
-        div.header { background: url(http://url.fortinet.net:8008/XX/YY/ZZ/CI/MGPGHGPGPFGHCDPFGGOGFGEH) 0 0 repeat-x; height: 82px; }
-        div.header h1 { background: url(http://url.fortinet.net:8008/XX/YY/ZZ/CI/MGPGHGPGPFGHCDPFGGHGFHBGCHEGPFBGAHAH) 0 0 no-repeat; }
-        div.header h2 { background: url(http://url.fortinet.net:8008/XX/YY/ZZ/CI/MGPGHGPGPFGHCDPFGGOGFGEH) 0 -82px no-repeat; width: 160px; float: right; }
-        div.sidebar { width: 195px; height: 200px; float: left; }
-        div.main { padding: 5px; margin-left: 195px; }
-        div.buttons { margin-top: 30px; text-align: right; }
-        div.app-title { background:url(http://www.fortiguard.com/app_logos/large107347980.png) no-repeat; margin: 8px 0px; height: 32px; text-indent: 36px; line-height: 20px; font-size: 17px; padding-top:5px; }
-        div.app-info { padding-bottom: 5px; text-indent: 18px; }
-        h3 { margin: 36px 0; font-size: 16pt; }
-        .blocked      h3 { color: #c00; }
-        h2.fgd_icon { background: url(http://url.fortinet.net:8008/XX/YY/ZZ/CI/MGPGHGPGPFGHCDPFGGOGFGEH) 0 -166px repeat-x; width: 90px; height: 92px; margin: 48px auto; }
-        .blocked      h2.fgd_icon { background-position: 0 -166px; }
-        form { width: 300px; margin: 30px 0; }
-        label { display: block; width: 300px; margin: 5px 0; line-height: 25px; }
-        label input { width: 200px; border: 1px solid #7f9db9; height: 20px; float: right; }
-    </style>
-</head>
-<body class="blocked">
-    <div class="header">
-        <h2>Powered By Fortinet</h2>
-        <h1>FortiGate Application Control</h1>
-    </div>
-    <div class="sidebar">
-        <h2 class="fgd_icon">blocked</h2>
-    </div>
-    <div class="main">
-<h3>Application Blocked!</h3>
-<div class="notice">You have attempted to use an application which is in violation of your internet usage policy.</div>
-<div class="app-title">Proxy.HTTP</div>
-<div class="app-info">Category: Proxy</div>
-<div class="app-info">URL: http:///GTSGIAG3</div>
-<div class="app-info">User name: </div>
-<div class="app-info">Group name: </div>
-<div class="app-info">Policy: a3bb41e0-6204-51e9-4e0d-813afcb952b4</div>    </div>
-</body>
-</html>
+* {font-family: "Bitstream Vera Sans Mono",courier, monospace; line-height: 1.4} 
 
+table {width: 400px; float: right; margin-bottom: 1em;}
+th {text-align: left;}
+img { float: left; margin-bottom: 10px; margin-right: 15px}
+pre {clear: both;}
+
+/* * {font-family: 'lucida grande', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', helvetica, sans-serif;}*/
+#title {margin: auto; width: 100%; overflow: hidden; font-size: 80%}
+#content, #postamble {margin: auto; width: 38em;}
+
+h2 { font-size: 1em; font-weight: bold; }
+h2:before {content: " * "}
+h3 { font-size: 1em; font-weight: bold}
+h3:before {content: " ** "}
+#title,pre {background: white; border: 0px; font-family: "Bitstream Vera Sans Mono",courier, monospace;} 
+
+a { color: black; text-decoration: none; font-weight: bold}
+a:hover { color: white; background-color: black;}
+a:before { content: "["; color: black; background-color: white;}
+a:after { content: "]"; color: black; background-color: white;}
+p { text-align: justify;  /*margin-bottom: 2em; margin-top: 2em;*/}
+h1 {display:none;}
+pre.code, pre.example {border: 2px dashed black}
+ul {list-style-type:none}
+ul li:before { content: "+ "; color: black;}
+#postamble p {
+margin: 0px;
+}
+
+.tag {
+float: right;
+background-color: white;
+color: #BEBEBE;
+}
+
+.tag span:before {
+    content: ":";
+}
+
+.tag:after {
+    content: ":";
+}
+
+h1, h2, h3, h4, h5, h6 {
+    clear: both;
+}
